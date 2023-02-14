@@ -1,0 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const core_1 = require("@nestjs/core");
+const config_1 = require("@nestjs/config");
+const custom_validation_pipe_1 = require("./pipe/custom-validation.pipe");
+const swagger_builder_1 = require("./swagger/swagger.builder");
+const prisma_service_1 = require("./prisma/prisma.service");
+const app_module_1 = require("./app.module");
+const bootstrap = async () => {
+    const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    app.useGlobalPipes(new custom_validation_pipe_1.CustomValidationPipe());
+    swagger_builder_1.SwaggerBuilder.make(app);
+    const config = app.get(config_1.ConfigService);
+    const prisma = app.get(prisma_service_1.PrismaService);
+    prisma.enableShutdownHooks(app);
+    const host = config.getOrThrow('app.host');
+    const port = config.getOrThrow('app.port');
+    await app.listen(3001, host);
+};
+setImmediate(bootstrap);

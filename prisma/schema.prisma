@@ -1,0 +1,75 @@
+datasource db {
+  url      = env("DATABASE_URL")
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Trip {
+  standart  @map("standart")
+  comfort   @map("comfort")
+  lux       @map("lux")
+
+  @@map("trip")
+}
+
+model Country {
+    id      String    @map("id")    @db.Uuid        @default("uuid()") @id
+    name    String    @map("name")  @db.VarChar(64) 
+
+    from    Profile[]                                                           @relation(name: "from")
+    to      Profile[]                                                           @relation(name: "to")
+
+    @@map("countries")
+}
+
+model TripType {
+    id          String  @map("id")                @db.Uuid        @default("gen_random_uuid") @id
+    type        Trip    @map("type")                              @default(standart)
+    adultPrice  String  @map("adult_price")       @db.VarChar(32)
+    childPrice  String  @map("child_price")       @db.VarChar(32)
+    sale        String  @map("sale")              @db.VarChar(4)
+    passengers  String  @map("passengers")        @db.VarChar(32)
+
+    profile     Profile[]                                                                     @relation(name: "trip")
+
+    @@map("trip_type")
+}
+
+model Profile {
+    id          String  @map("id")            @db.Uuid    
+    numerate    String  @map("numerate")      @db.Uuid   
+    firstName   String  @map("first_name")    @db.VarChar(64)
+    lastName    String  @map("last_name")     @db.VarChar(64)
+    birthDate   String  @map("birth_date")    @db.VarChar(10)
+    phone       String  @map("phone")         @db.VarChar(13)  
+    secondPhone String  @map("second_phone")  @db.VarChar(13)
+    totalPrice  String  @map("total_price")   @db.VarChar(32)
+    mail        String  @map("mail")          @db.VarChar(128)
+    image       String  @map("image")         @db.Text
+    fromId      String  @map("from_id")       @db.Uuid
+    toId        String  @map("to_id")         @db.Uuid
+    tripId      String  @map("trip_id")       @db.Uuid
+
+    from        Country                                                                    @relation(name: "from", references: [ id ], fields: [ fromId ])
+    to          Country                                                                    @relation(name: "to",   references: [ id ], fields: [ toId ])
+    trip        TripType                                                                   @relation(name: "trip", references: [ id ], fields: [ tripId ])
+
+    @@unique([mail])
+    @@map("profile")
+}
+
+model Payment {
+    id      String  @map("id")      @db.Uuid        @default("gen_random_uuid") @id
+    info    Json    @map("info")    @db.Json
+}
+
+model admin {
+    id        String  @map("id")        @db.Uuid        @default("gen_random_uuid")
+    username  String  @map("username")  @db.VarChar(32) 
+    password  String  @map("password")  @db.VarChar(32)
+
+    @@id([id])
+}
